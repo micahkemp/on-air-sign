@@ -155,6 +155,34 @@ class Window(Model):
             ]
         )
 
+    @property
+    def frame_length(self):
+        return self.length + self.thickness*2
+
+    @property
+    def frame_thickness(self):
+        # the frame should be exactly the thickness of the window so the faces align
+        return self.thickness
+
+    @property
+    def frame_height(self):
+        return self.height + self.thickness
+
+    def frame_cube(self):
+        return Cube(
+            name="frame_cube",
+            size=[self.frame_length, self.frame_thickness, self.frame_height],
+        )
+
+    def frame_cube_positioned(self):
+        return Translate(
+            name="frame_cube_positioned",
+            vector=[-self.frame_length/2, 0, -self.frame_height],
+            children=[
+                self.frame_cube(),
+            ]
+        )
+
 
 if __name__ == "__main__":
     window = Window(
@@ -168,4 +196,5 @@ if __name__ == "__main__":
 
     window.render("test_window")
     window.cutout_margin().render("test_window")
+    window.frame_cube_positioned().render("test_window")
 
