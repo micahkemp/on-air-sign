@@ -4,11 +4,12 @@ from interlock import Interlock
 
 
 class Window(Model):
-    def __init__(self, name, length, height, thickness, interlock_depth):
+    def __init__(self, name, length, height, thickness, interlock_depth, tolerance=None):
         self.length = length
         self.height = height
         self.thickness = thickness
         self.interlock_depth = interlock_depth
+        self.tolerance = tolerance
 
         super(Window, self).__init__(name=name)
 
@@ -124,12 +125,47 @@ class Window(Model):
             ],
         )
 
+    def cutout_window(self):
+        if self.tolerance:
+            return Window(
+                name="cutout_window",
+                length=self.length+self.tolerance*2,
+                height=self.height+self.tolerance,
+                thickness=self.thickness,
+                interlock_depth=self.interlock_depth,
+            ).component()
+
+        return None
+
+    def cutout(self):
+        # force cutout_window to be a module, though there's really nothing to union here
+        return Union(
+            name="cutout",
+            children=[
+                self.cutout_window(),
+            ]
+        )
+
+    def cutout_margin(self):
+        return Difference(
+            name="cutout_margin",
+            children=[
+                self.cutout_window(),
+                self.component(),
+            ]
+        )
+
 
 if __name__ == "__main__":
-    Window(
+    window = Window(
         name="test_window",
         length=50,
         height=50,
         thickness=5,
         interlock_depth=3,
-    ).render("test_window")
+        tolerance=0.5,
+    )
+
+    window.render("test_window")
+    window.cutout_margin().render("test_window")
+
